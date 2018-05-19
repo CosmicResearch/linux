@@ -1,0 +1,146 @@
+/*
+ * acme-aria.dts - Device Tree file for Aria G25
+ *
+ */
+ 
+/dts-v1/;
+#include "at91sam9g25.dtsi"
+
+/ {
+	model = "Acme Systems Aria G25";
+	compatible = "acme,ariettag25", "atmel,at91sam9x5", "atmel,at91sam9";
+
+	aliases {
+		serial0 = &dbgu;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "mem=128M console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait";
+	};
+
+	memory {
+		reg = <0x20000000 0x8000000>;
+	};
+
+	clocks {
+		slow_xtal {
+			clock-frequency = <32768>;
+		};
+		main_xtal {
+			clock-frequency = <12000000>;
+		};
+	};
+
+	ahb {
+		apb {
+			mmc0: mmc@f0008000 {
+				pinctrl-0 = <
+					&pinctrl_mmc0_slot0_clk_cmd_dat0
+					&pinctrl_mmc0_slot0_dat1_3>;
+				status = "okay";
+				slot@0 {
+					reg = <0>;
+					bus-width = <4>;
+				};
+			};
+
+			i2c0: i2c@f8010000 {
+				status = "okay";
+			};
+
+			i2c1: i2c@f8014000 {
+				status = "okay";
+			};
+
+			usart0: serial@f801c000 {
+				pinctrl-0 = <&pinctrl_usart0
+					     &pinctrl_usart0_rts
+					     &pinctrl_usart0_cts>;
+				status = "okay";
+			};
+
+			usart1: serial@f8020000 {
+				pinctrl-0 = <&pinctrl_usart1>;
+				status = "okay";
+			};
+
+			usart2: serial@f8024000 {
+				pinctrl-0 = <&pinctrl_usart2>;
+				status = "okay";
+			};
+
+			usart3: serial@f8028000 {
+				compatible = "atmel,at91sam9260-usart";
+				reg = <0xf8028000 0x200>;
+				interrupts = <8 4 5>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_usart3>;
+				status = "okay";
+			};
+
+			macb0: ethernet@f802c000 {
+				phy-mode = "rmii";
+				local-mac-address = [00 00 00 00 00 00];
+				status = "okay";
+			};
+
+			uart0: serial@f8040000 {
+				status = "disabled";
+			};
+
+			uart1: serial@f8044000 {
+				status = "disabled";
+			};
+
+			adc0: adc@f804c000 {
+				status = "okay";
+				atmel,adc-channels-used = <0xf>;
+			};
+
+			dbgu: serial@fffff200 {
+				status = "okay";
+			};
+
+			pinctrl@fffff400 {
+				w1_0 {
+					pinctrl_w1_0: w1_0-0 {
+						atmel,pins = <0 21 0x0 0x1>; /* PA21 PIO, pull-up */
+					};
+				};
+			};
+
+			rtc@fffffeb0 {
+				status = "okay";
+			};
+		};
+
+		usb0: ohci@00600000 {
+			status = "okay";
+			num-ports = <3>;
+		};
+
+		usb1: ehci@00700000 {
+			status = "okay";
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		/* little green LED in middle of Aria G25 module */
+		aria_led {
+			label = "aria_led";
+			gpios = <&pioB 8 GPIO_ACTIVE_HIGH>; /* PB8 */
+			linux,default-trigger = "heartbeat";
+		};
+
+	};
+
+	onewire@0 {
+		compatible = "w1-gpio";
+		gpios = <&pioA 21 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_w1_0>;
+	};
+};

@@ -1,0 +1,143 @@
+/*
+ * acme-xterm-01.dts - Device Tree file for xterm-01
+ *
+ */
+ 
+/dts-v1/;
+#include "at91sam9g25.dtsi"
+
+/ {
+	model = "Acme Systems xterm-01";
+	compatible = "acme,xterm01", "atmel,at91sam9x5", "atmel,at91sam9";
+
+	aliases {
+		serial0 = &dbgu;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "mem=128M console=tty1 console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait consoleblank=0";
+	};
+
+	memory {
+		reg = <0x20000000 0x8000000>;
+	};
+
+	clocks {
+		slow_xtal {
+			clock-frequency = <32768>;
+		};
+		main_xtal {
+			clock-frequency = <12000000>;
+		};
+	};
+
+	ahb {
+		apb {
+			mmc0: mmc@f0008000 {
+				pinctrl-0 = <
+				  &pinctrl_mmc0_slot0_clk_cmd_dat0
+				  &pinctrl_mmc0_slot0_dat1_3>;
+				status = "okay";
+				slot@0 {
+					reg = <0>;
+					bus-width = <4>;
+				};
+			};
+			i2c1: i2c@f8014000 {
+				status ="disabled";
+			};
+			usart0: serial@f801c000 {
+				pinctrl-0 = <&pinctrl_usart0>;
+				status ="disabled";
+			};
+			usart1: serial@f8020000 {
+				pinctrl-0 = <&pinctrl_usart1>;
+				status ="disabled";
+			};
+			
+			spi1: spi@f0004000 {
+				status = "okay";
+				cs-gpios = <&pioA 8 0>;
+
+				device@0 {
+					rotate = <270>;
+					bgr;
+					fps = <30>;
+					compatible = "ilitek,ili9341";
+					spi-max-frequency = <50000000>;   
+					reg = <0>;
+					regwidth = <8>;
+					buswidth = <8>;
+					verbose = <3>;
+					reset-gpios = <&pioC 3 0>; /* PC3 - J4.33 */
+					dc-gpios = <&pioC 4 0>;    /* PC4 - J4.31 */
+				};
+			};
+
+			adc0: adc@f804c000 {
+				compatible = "atmel,at91sam9x5-adc";
+				atmel,adc-clock-rate = <1000000>;
+				atmel,adc-ts-wires = <4>;
+				atmel,adc-ts-pressure-threshold = <10000>;
+				status = "okay";
+			};
+
+			pinctrl@fffff400 {
+				pwm0 {
+					pinctrl_pwm0_0: pwm0_0-0 {
+						atmel,pins =
+							< AT91_PIOB 11 AT91_PERIPH_B AT91_PINCTRL_NONE>;
+					};
+					pinctrl_pwm0_1: pwm0_1-0 {
+						atmel,pins =
+							< AT91_PIOB 12 AT91_PERIPH_B AT91_PINCTRL_NONE>;
+					};
+					pinctrl_pwm0_2: pwm0_2-0 {
+						atmel,pins =
+							< AT91_PIOB 13 AT91_PERIPH_B AT91_PINCTRL_NONE>;
+					};
+					pinctrl_pwm0_3: pwm0_3-0 {
+						atmel,pins =
+							< AT91_PIOB 14 AT91_PERIPH_B AT91_PINCTRL_NONE>;
+					};
+				};
+			};
+			pwm0: pwm@f8034000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <    &pinctrl_pwm0_2 &pinctrl_pwm0_3>;
+				status = "disabled";
+			};
+
+			ssc0: ssc@f0010000 {
+				status = "disabled";
+			};
+			usb2: gadget@f803c000 {
+				status = "okay";
+			};
+			dbgu: serial@fffff200 {
+				status = "okay";
+			};
+			pinctrl@fffff400 {
+			};
+			rtc@fffffeb0 {
+				status = "okay";
+			};
+		};
+		usb0: ohci@00600000 {
+			status = "okay";
+			num-ports = <3>;
+		};
+		usb1: ehci@00700000 {
+			status = "okay";
+		};
+	};
+	leds {
+		compatible = "gpio-leds";
+		arietta_led {
+			label = "arietta_led";
+			gpios = <&pioB 8 GPIO_ACTIVE_HIGH>; /* PB8 */
+			linux,default-trigger = "heartbeat";
+		};
+	};
+};
